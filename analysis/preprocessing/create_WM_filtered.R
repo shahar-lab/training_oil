@@ -1,6 +1,8 @@
 rm(list=ls())
+source('./functions/my_starter.R')
+load(paste0(data_folder,"/empirical_data/data_raw/WM_raw.rdata"))
+     
 # exclude subjects --------------------------------------------------------
-load("data/empirical_data/data_raw/WM_raw.rdata")
 
 remove_subjects <- WM_raw %>%
   group_by(subject_id) %>%
@@ -10,9 +12,9 @@ remove_subjects <- WM_raw %>%
     mean_exclude_inattention = mean(exclude_inattention, na.rm = TRUE)
   )
 WM=WM_raw%>%filter(exclude_4==FALSE,exclude_chance==FALSE,exclude_inattention==FALSE)
-save(WM,file="data/empirical_data/data_filtered/WM.rdata")
+save(WM,file=paste0(data_folder,"/empirical_data/data_filtered/WM.rdata"))
 
-write.csv(WM%>%select(-subject_id),file="data/empirical_data/data_filtered/WM.csv")
+write.csv(WM%>%select(-subject_id),file=paste0(data_folder,"/empirical_data/data_filtered/WM.csv"))
 
 #stats exclusion
 WM_raw%>%group_by(subject_id)%>%summarise(mean(exclude_4),mean(exclude_chance),mean(exclude_inattention))%>%

@@ -21,6 +21,9 @@ library(ggpubr)
 library(ramify)
 library(pROC)
 library(patchwork)
+library(purrr)
+library(tidyverse)
+library(lubridate)
 
 source('./stan_modeling/functions/simulate_parameters.R')
 source('./stan_modeling/functions/simulate_create_artifical_data.R')
@@ -51,7 +54,7 @@ source('./functions/add_standata_file.r')
 source('./functions/set_standata_file.R')
 source('./functions/update_standata_files.R')
 update_standata_files()
-
+data_folder="D:\\sync\\Sync\\Ido_Ben_Artzi\\training_oil"
 
 
 

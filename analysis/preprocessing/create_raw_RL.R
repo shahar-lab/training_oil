@@ -1,6 +1,6 @@
 
-library(tidyverse)
 rm(list = ls())
+source('./functions/my_starter.R')
 
 # preprocess --------------------------------------------------------------
 
@@ -54,7 +54,7 @@ process_RL <- function(file_path) {
   flipped_motivation[grepl("^no_", motivation_names)] <- 100 - flipped_motivation[grepl("^no_", motivation_names)]
   
   # Calculate the average
-  sum_motivation <- mean(flipped_motivation)
+  mean_motivation <- mean(flipped_motivation)
   
   # Convert to a 1-row dataframe with 9 columns
   motivation_df <- as.data.frame(t(motivation))
@@ -125,14 +125,18 @@ process_RL <- function(file_path) {
   }
   # Bind to df (if you want these values repeated for each row of df)
   df <- bind_cols(df, motivation_df[rep(1, nrow(df)), ])
-  df=df%>%mutate(sum_motivation=sum_motivation)
+  df=df%>%mutate(mean_motivation=mean_motivation, end_time = file_path %>%
+                   str_extract("(?<=SESSION_).*(?=\\.csv)") %>%
+                   str_replace("h", ":") %>%
+                   str_replace("(\\d{2})\\.(\\d{3})$", "\\1.\\2") %>%
+                   parse_date_time(orders = "Ymd HMS", tz = "UTC"))
   df <- bind_cols(df, text_df[rep(1, nrow(df)), ])
   return (df)
 }
 # Get all CSV files in the directory
-files1 <- list.files("data/empirical_data/data_collected/session1", pattern = "\\.csv$", full.names = TRUE)
-files2 <- list.files("data/empirical_data/data_collected/session2", pattern = "\\.csv$", full.names = TRUE)
-files3 = list.files("data/empirical_data/data_collected/session3", pattern = "\\.csv$", full.names = TRUE)
+files1 <- list.files(paste0(data_folder,"/empirical_data/data_collected/session1"), pattern = "\\.csv$", full.names = TRUE)
+files2 <- list.files(paste0(data_folder,"/empirical_data/data_collected/session2"), pattern = "\\.csv$", full.names = TRUE)
+files3 <- list.files(paste0(data_folder,"/empirical_data/data_collected/session3"), pattern = "\\.csv$", full.names = TRUE)
 # Process each file and combine results into a dataframe
 df_raw1 <- do.call(rbind, lapply(files1, process_RL))
 df_raw2 <- do.call(rbind, lapply(files2, process_RL))
@@ -141,9 +145,9 @@ df_raw1$session=1
 df_raw2$session=2
 df_raw3$session=3
 #save df_raw by session folder
-save(df_raw1,file="data/empirical_data/data_raw/session1/df_raw1.rdata")
-save(df_raw2,file="data/empirical_data/data_raw/session2/df_raw2.rdata")
-save(df_raw3,file="data/empirical_data/data_raw/session3/df_raw3.rdata")
+save(df_raw1,file=paste0(data_folder,"/empirical_data/data_raw/session1/df_raw1.rdata"))
+save(df_raw2,file=paste0(data_folder,"/empirical_data/data_raw/session2/df_raw2.rdata"))
+save(df_raw3,file=paste0(data_folder,"/empirical_data/data_raw/session3/df_raw3.rdata"))
 
 #bind all files sorted by subject
 
@@ -152,7 +156,15 @@ df_raw <- bind_rows(df_raw1, df_raw2, df_raw3)
 df_raw = df_raw %>% arrange(subject_id,session,block,trial)%>%mutate(subject=as.integer(as.factor(subject_id)))%>%
   select(subject_id,session,block,trial,everything())
 
-save(df_raw,file="data/empirical_data/data_raw/RL_raw.rdata")
+save(df_raw,file=paste0(data_folder,"/empirical_data/data_raw/RL_raw.rdata"))
 
-write.csv(df_raw%>%select(-subject_id),file="data/empirical_data/data_raw/RL_raw.csv")
+write.csv(df_raw%>%select(-subject_id),file=paste0(data_folder,"/empirical_data/data_raw/RL_raw.csv"))
 
+#filter current subjects
+session3=unique(df_raw3%>%filter(end_time > ymd("2025-05-02"))%>%pull(subject_id))
+write.csv(session3,file=paste0(data_folder,"/empirical_data/data_raw/session3.csv"))
+
+session2=unique(df_raw2%>%filter(end_time > ymd("2025-05-01"))%>%pull(subject_id))
+write.csv(session2,file=paste0(data_folder,"/empirical_data/data_raw/session2.csv"))
+session1=unique(df_raw1%>%filter(end_time > ymd("2025-04-30"))%>%pull(subject_id))
+write.csv(session1,file=paste0(data_folder,"/empirical_data/data_raw/session1.csv"))

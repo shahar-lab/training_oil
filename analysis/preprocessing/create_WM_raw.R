@@ -1,6 +1,8 @@
-rm(list=ls())
-library(tidyverse)
-load("data/empirical_data/data_raw/RL_raw.rdata")
+
+rm(list = ls())
+source('./functions/my_starter.R')
+load(file=paste0(data_folder,"/empirical_data/data_raw/RL_raw.rdata"))
+
 # session1 ----------------------------------------------------------------
 process_wm <- function(file_path) {
   wm <- read.csv(file_path)
@@ -17,18 +19,39 @@ process_wm <- function(file_path) {
     number_inattention=0 
   }
 
-  #add acc
-  wm=wm%>%filter(block_type=="exp",trial_name=="test_squares")%>%
-    select(subject_id,trial_num,set_size,rt,accuracy,response,correct_response,mapping,condition,stimulus)
+  #memory stimuli
+  memory <- wm %>%
+    filter(block_type == "exp", trial_name == "memory") %>%
+    mutate(
+      locations = str_extract_all(stimulus, "class=['\"](.*?)['\"]") %>%
+        map_chr(~.x %>%
+                  str_remove_all("class=|['\"]") %>%
+                  discard(~.x == "fixation") %>%
+                  paste(collapse = ",")),
+      
+      colors = str_extract_all(stimulus, "(?<=squares/)(.*?)(?=\\.png)") %>%
+        map_chr(~paste(.x, collapse = ","))
+    ) %>%
+    select(locations, colors)
   
+  
+  #test
+  wm=wm%>%filter(block_type=="exp",trial_name=="test_squares")%>%
+    select(subject_id,trial_num,set_size,rt,accuracy,response,correct_response,mapping,condition,stimulus) %>%
+    mutate(
+      location = str_extract(stimulus, "class=['\"](.*?)['\"]") %>% str_remove_all("class=|['\"]"),
+      color = str_extract(stimulus, "(?<=squares/)(.*?)(?=\\.png)")
+    )
+  wm$locations=memory$locations
+  wm$colors=memory$colors
   wm=wm%>%mutate(mean_accuracy4=wm%>%filter(set_size==4)%>%summarise(acc4=mean(accuracy=="true",na.rm=T))%>%pull(acc4),
          mean_accuracy8=wm%>%filter(set_size==8)%>%summarise(acc8=mean(accuracy=="true",na.rm=T))%>%pull(acc8),
          mean_accuracy_combined=(mean_accuracy4+mean_accuracy8)/2,
          capacity4=4*(2*mean_accuracy4-1),
          capacity8=8*(2*mean_accuracy8-1),
-         capacity_combined=mean(capacity4+capacity8),
+         capacity_combined=(capacity4+capacity8)/2,
          trial_num=trial_num+1)%>%
-         rename(trial=trial_num)
+         rename(trial=trial_num)%>%select(-stimulus)
   
   #check flags
   
@@ -56,10 +79,10 @@ else{
 
 
 # Get all CSV files in the directory
-files <- list.files("data/empirical_data/data_collected/session4", pattern = "\\.csv$", full.names = TRUE)
+files <- list.files(paste0(data_folder,"/empirical_data/data_collected/session4"), pattern = "\\.csv$", full.names = TRUE)
 
 # Process each file and combine results into a dataframe
 WM_raw <- do.call(rbind, lapply(files, function(x) process_wm(x)))
-save(WM_raw,file="data/empirical_data/data_raw/WM_raw.rdata")
-write.csv(WM_raw%>%select(-subject_id),file="data/empirical_data/data_raw/WM_raw.csv")
+save(WM_raw,file=paste0(data_folder,"/empirical_data/data_raw/WM_raw.rdata"))
+write.csv(WM_raw%>%select(-subject_id),file=paste0(data_folder,"/empirical_data/data_raw/WM_raw.csv"))
 
