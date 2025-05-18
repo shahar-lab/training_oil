@@ -22,7 +22,7 @@ modelfit_mcmc <-function(path, data_path,save_path, mymcmc){
   #fit=my_compiledmodel$variational(data = data_for_stan,threads=10,draws=1000)
   #fit=my_compiledmodel$pathfinder(data = data_for_stan)
   #save
-  if (mymcmc$datatype=='empirical'){fit$save_object(paste0(path$data,'/modelfit_empirical_splines_',save_path,'.rds'))
+  if (mymcmc$datatype=='empirical'){fit$save_object(paste0(path$data,'/modelfit_empirical_',save_path,'.rds'))
     cat(paste0('[stan_modeling]:  "modelfit_empirical.rds" was saved at "',path$data,'"'))
   }
   if (mymcmc$datatype=='artificial'){fit$save_object(paste0(path$data,'/modelfit_recovery.rds'))

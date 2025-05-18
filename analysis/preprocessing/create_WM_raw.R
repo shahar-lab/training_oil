@@ -1,7 +1,7 @@
 
 rm(list = ls())
 source('./functions/my_starter.R')
-load(file=paste0(data_folder,"/empirical_data/data_raw/RL_raw.rdata"))
+load(file="data/empirical_data/data_raw/RL_raw.rdata")
 
 # session1 ----------------------------------------------------------------
 process_wm <- function(file_path) {
@@ -79,10 +79,10 @@ else{
 
 
 # Get all CSV files in the directory
-files <- list.files(paste0(data_folder,"/empirical_data/data_collected/session4"), pattern = "\\.csv$", full.names = TRUE)
+files <- list.files("data/empirical_data/data_collected/session4", pattern = "\\.csv$", full.names = TRUE)
 
 # Process each file and combine results into a dataframe
 WM_raw <- do.call(rbind, lapply(files, function(x) process_wm(x)))
-save(WM_raw,file=paste0(data_folder,"/empirical_data/data_raw/WM_raw.rdata"))
-write.csv(WM_raw%>%select(-subject_id),file=paste0(data_folder,"/empirical_data/data_raw/WM_raw.csv"))
+save(WM_raw,file="data/empirical_data/data_raw/WM_raw.rdata")
+write.csv(WM_raw%>%select(-subject_id),file="data/empirical_data/data_raw/WM_raw.csv")
 

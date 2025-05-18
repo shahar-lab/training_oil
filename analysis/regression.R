@@ -1,7 +1,7 @@
 
 rm(list=ls())
 source('./functions/my_starter.R')
-load(paste0(data_folder,"/empirical_data/data_filtered/RL.rdata"))
+load(paste0("data/empirical_data/data_filtered/RL.rdata"))
 
 myprior = prior(normal(0, 2),  class = b)
 df$reward_oneback=factor(df$reward_oneback)
@@ -35,12 +35,12 @@ m_oil_session <-
     seed = 123,
     backend = "cmdstanr"
   )
-save(m_oil_session,file=paste0(data_folder,"/regression/oil_session.Rdata"))
+save(m_oil_session,file=paste0("data/regression/oil_session.Rdata"))
 
 m_oil_motivation <-
   brm(
     formula=stay_key~0+Intercept+reward_oneback*mean_motivation+(1+reward_oneback|subject),
-    data = df,
+    data = df%>%filter(reoffer_ch==F,reoffer_unch==F),
     family = bernoulli(link = "logit"),
     warmup = 1000,
     iter = 2000,
@@ -49,7 +49,7 @@ m_oil_motivation <-
     seed = 123,
     backend = "cmdstanr"
   )
-save(m_oil_motivation,file=paste0(data_folder,"/regression/oil_motivation.Rdata"))
+save(m_oil_motivation,file=paste0("data/regression/oil_motivation.Rdata"))
 
 c_eff <- conditional_effects(m_oil_motivation)
 
@@ -167,14 +167,13 @@ slopes_s3 <- coef(m_unch_session3)$subject[,1,2]
 m_oil_session1 <-
   brm(
     formula=stay_key~0+Intercept+reward_oneback+(1+reward_oneback|subject_id),
-    data = df%>%filter(reoffer_ch==F,reoffer_unch==F,session==1,subject_id%in%participants_with_3_sessions),
+    data = df%>%filter(session==1),
     family = bernoulli(link = "logit"),
     warmup = 1000,
     iter = 2000,
     chains = 4,
     cores = 4,
     seed = 123,
-    prior=myprior,
     backend = "cmdstanr"
   )
 
@@ -183,28 +182,26 @@ m_oil_session1 <-
 m_oil_session2 <-
   brm(
     formula=stay_key~0+Intercept+reward_oneback+(1+reward_oneback|subject_id),
-    data = df%>%filter(reoffer_ch==F,reoffer_unch==F,session==2,subject_id%in%participants_with_3_sessions),
+    data = df%>%filter(session==2),
     family = bernoulli(link = "logit"),
     warmup = 1000,
     iter = 2000,
     chains = 4,
     cores = 4,
     seed = 123,
-    prior=myprior,
     backend = "cmdstanr"
   )
 
 m_oil_session3 <-
   brm(
     formula=stay_key~0+Intercept+reward_oneback+(1+reward_oneback|subject_id),
-    data = df%>%filter(reoffer_ch==F,reoffer_unch==F,session==3,subject_id%in%participants_with_3_sessions),
+    data = df%>%filter(session==3),
     family = bernoulli(link = "logit"),
     warmup = 1000,
     iter = 2000,
     chains = 4,
     cores = 4,
     seed = 123,
-    prior=myprior,
     backend = "cmdstanr"
   )
 

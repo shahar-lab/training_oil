@@ -12,18 +12,12 @@ convert_to_stan_format <-function (filepath,save_path,var_toinclude){
   # Create the subject index: repeat each subject ID for every trial they performed
   subject_vector <- rep(1:n_subjects, times = n_trials_per_subject)
   
-  df=df%>%mutate(
-    first_trial_in_block=if_else(block!=lag(block),1,0),first_trial=if_else(trial==1&block==1,1,0),
+  df=df%>%mutate(first_trial=if_else(block!=lag(block)&block==1,1,0),
+    first_trial_in_block=if_else(block!=lag(block),1,0),
     ch_key=ch_key+1)
   df$first_trial_in_block[1]=1
-  
-  #empirical only
-  # df=df%>%mutate(selected_offer=choice,choice=choice+1)
-  # df$selected_offer=df$ch_key-1
-  #df$key1=1
-  #df$key2=2
-  #df$rt=df$rt/1000
-  #df$ch_key=df$ch_key+1
+  df$first_trial[1]=1
+df$reward=as.numeric(df$reward)-1
   # Prepare stan_data list
   data_for_stan <- list(
     Ndata = n_total_trials,  # Total number of trials
@@ -36,10 +30,7 @@ convert_to_stan_format <-function (filepath,save_path,var_toinclude){
   for (var in var_toinclude) {
     data_for_stan[[var]] <-  as.vector(df[[var]])
   }
-  data_for_stan$reward=as.numeric(data_for_stan$reward)
-  #save(data_for_stan,file="data/franz_data/subject1_standata.Rdata")
+
   save(data_for_stan,file=save_path)
-  #save(data_for_stan,file=paste0(path$data,'/artificial_standata.Rdata'))
-  # cat(paste0('[stan_modeling]:  "artificial_standata.Rdata" was saved at "',path$data,'"'))
   
 }

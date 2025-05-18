@@ -1,7 +1,7 @@
 
 rm(list = ls())
 source('./functions/my_starter.R')
-load(file=paste0(data_folder,"/empirical_data/data_raw/RL_raw.rdata"))
+load(file="data/empirical_data/data_raw/RL_raw.rdata")
 
 #filter
 filter_subject_id_data <- function(subject_id, data) {
@@ -51,6 +51,6 @@ df=df%>%group_by(subject)%>%mutate(missing_sessions = paste0(setdiff(c(1, 2, 3),
 
 #df=df%>%filter(exclude_missing_sessions==FALSE)
 
-save(df,file=paste0(data_folder,"/empirical_data/data_filtered/RL.rdata"))
-write.csv(df%>%select(-subject_id),file=paste0(data_folder,"/empirical_data/data_filtered/RL.csv"))
+save(df,file="data/empirical_data/data_filtered/RL.rdata")
+write.csv(df%>%select(-subject_id),file="data/empirical_data/data_filtered/RL.csv")
 

@@ -129,14 +129,15 @@ model {
   mu_lambda ~ normal(0, 3);
   
   // Priors for group-level standard deviations
-  sigma_alpha ~ normal(0, 1);
-  sigma_beta ~ normal(0, 1);
-  sigma_lambda ~ normal(0, 1);
+  sigma_alpha ~ normal(0, 3);
+  sigma_beta ~ normal(0, 3);
+  sigma_lambda ~ normal(0, 3);
   
   // Priors for subject-specific effect
   alpha_raw~normal(0,1);
   beta_raw~normal(0,1);
   lambda_raw~normal(0,1);
+  
 for (trial in 1:Ndata){
   target+= bernoulli_logit_lpmf(selected_offer[trial] | beta_t[trial] * Qnet_diff[trial]);
     }
